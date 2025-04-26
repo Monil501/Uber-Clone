@@ -1,0 +1,22 @@
+import React from 'react'
+import { Route, Routes } from 'react-router-dom'
+import Home from './pages/Home.jsx'
+import UserLogin from './pages/UserLogin.jsx'
+import UserSignUp from './pages/UserSignUp.jsx'
+import CaptainLogin from './pages/CaptainLogin.jsx'
+import CaptainSignup from './pages/CaptainSignup.jsx'
+const App = () => {
+  return (
+    <div>
+      <Routes>
+        <Route path='/' element={<Home />} />
+        <Route path='/login' element={<UserLogin />} />
+        <Route path='/signup' element={<UserSignUp />} />
+        <Route path='/captainlogin' element={<CaptainLogin />} />
+        <Route path='/captainsignup' element={<CaptainSignup />} />
+      </Routes>
+    </div>
+  )
+}
+
+export default App
