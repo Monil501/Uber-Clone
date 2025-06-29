@@ -28,29 +28,29 @@ const UserSignup = () => {
     setError('');
     
     try {
-      const newUser = {
-        fullname: {
-          firstname: firstName,
-          lastname: lastName
-        },
-        email: email,
-        password: password
-      }
+    const newUser = {
+      fullname: {
+        firstname: firstName,
+        lastname: lastName
+      },
+      email: email,
+      password: password
+    }
 
       console.log("Sending data:", newUser); // Debug log
       const response = await axios.post(`${BASE_URL}/users/register`, newUser)
 
-      if (response.status === 201) {
-        const data = response.data
-        setUser(data.user)
-        localStorage.setItem('token', data.token)
-        navigate('/home')
-      }
+    if (response.status === 201) {
+      const data = response.data
+      setUser(data.user)
+      localStorage.setItem('token', data.token)
+      navigate('/home')
+    }
 
-      setEmail('')
-      setFirstName('')
-      setLastName('')
-      setPassword('')
+    setEmail('')
+    setFirstName('')
+    setLastName('')
+    setPassword('')
     } catch (err) {
       console.error('Signup error:', err);
       

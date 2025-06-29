@@ -20,24 +20,24 @@ const UserLogin = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     try {
-      const userData = {
-        email: email,
-        password: password
-      }
+    const userData = {
+      email: email,
+      password: password
+    }
 
       const response = await axios.post(`${BASE_URL}/users/login`, userData)
 
-      if (response.status === 200) {
-        const data = response.data
-        setUser(data.user)
-        localStorage.setItem('token', data.token)
-        navigate('/home')
-      }
+    if (response.status === 200) {
+      const data = response.data
+      setUser(data.user)
+      localStorage.setItem('token', data.token)
+      navigate('/home')
+    }
 
-      setEmail('')
-      setPassword('')
+    setEmail('')
+    setPassword('')
     } catch (err) {
       console.error('Login error:', err);
       
