@@ -133,7 +133,7 @@ const PlacesAutocomplete = ({
 
   if (loadError) {
     return (
-      <div className="mb-4">
+      <div className="mb-2">
         <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
         <div className="bg-red-50 border border-red-200 p-4 rounded-md text-red-600 text-sm">
           Error loading Google Maps Places API: {loadError.message}
@@ -153,7 +153,7 @@ const PlacesAutocomplete = ({
 
   if (!isApiLoaded) {
     return (
-      <div className="mb-4">
+      <div className="mb-2">
         <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
         <div className="animate-pulse h-10 bg-gray-200 rounded-md"></div>
       </div>
@@ -161,8 +161,10 @@ const PlacesAutocomplete = ({
   }
 
   return (
-    <div className="mb-4 relative">
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <div className="mb-0 relative w-full">
+      {label && (
+        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      )}
       <input
         ref={inputRef}
         value={inputValue}
@@ -170,7 +172,7 @@ const PlacesAutocomplete = ({
         onKeyDown={handleInputKeyDown}
         disabled={!ready}
         placeholder={placeholder}
-        className="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 rounded-md p-3"
+        className="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full text-base border-gray-300 rounded-md p-3"
       />
       
       {/* Suggestions dropdown */}
