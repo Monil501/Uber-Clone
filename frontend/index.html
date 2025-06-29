@@ -4,7 +4,13 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    <title>Uber Clone</title>
+    <!-- Load the Google Maps API with Places library -->
+    <script>
+      // Direct API key - this is a workaround for Vite env variable issues
+      window.googleMapsApiKey = "AIzaSyDFoSHzsO-N2Y-mKsenA5UWejeQ0KbbZm0";
+      document.write('<script async defer src="https://maps.googleapis.com/maps/api/js?key=' + window.googleMapsApiKey + '&libraries=places&callback=Function.prototype"><\/script>');
+    </script>
   </head>
   <body>
     <div id="root"></div>

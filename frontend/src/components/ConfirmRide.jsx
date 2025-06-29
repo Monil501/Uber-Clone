@@ -1,12 +1,14 @@
 import React from "react";
 
 const ConfirmRide = (props) => {
+  const { pickup, destination, price, sendRequestToCaptains } = props;
+  
   return (
     <div>
       <h5
         className="p-1 text-center w-[93%] absolute top-0"
         onClick={() => {
-          props.setVehiclePanel(false);
+          props.setConfirmRidePanel(false);
         }}
       >
         <i className="text-3xl text-gray-400 ri-arrow-down-wide-line"></i>
@@ -22,34 +24,39 @@ const ConfirmRide = (props) => {
           <div className="flex items-center gap-5 p-3 border-b-2 border-gray-200">
             <i className="ri-map-pin-user-fill"></i>
             <div>
-              <h3 className="text-lg font-medium">562/11-A</h3>
-              <p className="text-sm -mt-1 text-gray-600">
-                kankariya talab,Ahemdabad
+              <h3 className="text-lg font-medium">Pickup</h3>
+              <p className="text-sm text-gray-600 line-clamp-1">
+                {pickup || "562/11-A, kankariya talab, Ahemdabad"}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-5 p-3 border-b-2 border-gray-200">
             <i className="text-lg ri-map-pin-2-fill"></i>
             <div>
-              <h3 className="text-lg font-medium">562/11-A</h3>
-              <p className="text-sm -mt-1 text-gray-600">
-                kankariya talab,Ahemdabad
+              <h3 className="text-lg font-medium">Destination</h3>
+              <p className="text-sm text-gray-600 line-clamp-1">
+                {destination || "562/11-A, kankariya talab, Ahemdabad"}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-5 ">
-          <i className="text-lg ml-3 ri-cash-fill"></i>
-            <div>
-              <h3 className="text-lg font-medium">₹193.20</h3>
-              <p className="text-sm -mt-1 text-gray-600">Cash Cash</p>
+          <div className="flex items-center justify-between p-3">
+            <div className="flex items-center gap-5">
+              <i className="text-lg ri-cash-fill"></i>
+              <div>
+                <h3 className="text-lg font-medium">₹{price || 193}</h3>
+                <p className="text-sm -mt-1 text-gray-600">Cash</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full">
+              <i className="ri-coupon-2-line"></i>
+              <span className="text-sm">Apply Coupon</span>
             </div>
           </div>
         </div>
         <button onClick={()=>{
-            props.setVehicleFound(true)
-            props.setConfirmRidePanel(false)
+            sendRequestToCaptains();
         }} className="w-full mt-5 bg-green-600 text-white font-semibold p-2 rounded-lg">
-          Confirm
+          Confirm UberGo
         </button>
       </div>
     </div>

@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+/* Ensure proper map container sizing */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Fix for Google Maps controls */
+.gm-style .gm-style-iw-c {
+  padding: 12px !important;
+}
+
+/* Fix for map directions rendering */
+.gm-style-iw-d {
+  overflow: hidden !important;
+}
