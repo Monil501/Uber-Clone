@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 const LookingForDriver = (props) => {
   const { pickup, destination, price } = props;
   const [searchTime, setSearchTime] = useState(0);
+  const [searchStatus, setSearchStatus] = useState('Sending ride request to captains nearby');
   
   // Simulate searching time counter
   useEffect(() => {
@@ -12,6 +13,19 @@ const LookingForDriver = (props) => {
     
     return () => clearInterval(timer);
   }, []);
+  
+  // Update search status message based on time
+  useEffect(() => {
+    if (searchTime < 5) {
+      setSearchStatus('Sending ride request to captains nearby');
+    } else if (searchTime < 10) {
+      setSearchStatus('Waiting for captain to accept your ride');
+    } else if (searchTime < 15) {
+      setSearchStatus('Still looking for the best captain for you');
+    } else {
+      setSearchStatus('Expanding search to find you a ride');
+    }
+  }, [searchTime]);
   
   return (
     <div>
@@ -28,9 +42,7 @@ const LookingForDriver = (props) => {
         <div className="w-20 h-20 border-4 border-gray-300 border-t-green-500 rounded-full animate-spin mb-6"></div>
         <p className="text-gray-600 mb-2">Searching for available captains...</p>
         <p className="text-sm text-gray-500 mb-8">
-          {searchTime < 5 ? 'Sending ride request to captains nearby' : 
-           searchTime < 10 ? 'Waiting for captain to accept your ride' : 
-           'Still looking for the best captain for you'}
+          {searchStatus}
         </p>
         
         {searchTime > 15 && (

@@ -27,8 +27,8 @@ const Home = () => {
   const ConfirmRidePanelRef = useRef(null);
   const panelRef = useRef(null);
   const panelCloseRef = useRef(null);
-  const vehicleFounfRef = useRef(null);
-  const waitingforDriverRef = useRef(null);
+  const vehicleFoundRef = useRef(null);
+  const waitingForDriverRef = useRef(null);
   
   const [vehiclePanel, setVehiclePanel] = useState(false);
   const [confirmRidePanel, setConfirmRidePanel] = useState(false);
@@ -73,15 +73,20 @@ const Home = () => {
       
       // Simulate captain accepting the ride
       setTimeout(() => {
-        setSelectedCaptain(mockCaptains[0]);
-        setVehicleFound(false);
-        setWaitingForDriver(true);
-        
-        // Set driver location
+        // Set driver location first to update the map
         setDriverLocation({
           lat: mockCaptains[0].lat,
           lng: mockCaptains[0].lng
         });
+        
+        // Select a captain and transition to waiting state
+        setSelectedCaptain(mockCaptains[0]);
+        setVehicleFound(false); // Hide looking for driver panel
+        
+        // Small delay before showing the waiting for driver panel for smooth transition
+        setTimeout(() => {
+          setWaitingForDriver(true);
+        }, 300);
       }, 5000); // Captain accepts after 5 seconds
     }, 2000); // Find captains after 2 seconds
   };
@@ -94,6 +99,17 @@ const Home = () => {
     setAvailableCaptains([]);
     setSelectedCaptain(null);
     setDriverLocation(null);
+    
+    // Reset to location selection state
+    setTimeout(() => {
+      // Show the main location panel again
+      if (!pickup || !destination) {
+        setPanelOpen(true);
+      } else {
+        // Or show vehicle selection if locations are still set
+        setVehiclePanel(true);
+      }
+    }, 300);
   };
 
   // Calculate estimated price based on distance between pickup and destination
@@ -174,11 +190,11 @@ const Home = () => {
 
    useGSAP(function(){
     if(vehicleFound){
-     gsap.to(vehicleFounfRef.current,{
+     gsap.to(vehicleFoundRef.current,{
        transform:'translateY(0)'
      })
     }else{
-     gsap.to(vehicleFounfRef.current,{
+     gsap.to(vehicleFoundRef.current,{
        transform:'translateY(100%)'
      })
     }
@@ -186,11 +202,11 @@ const Home = () => {
 
    useGSAP(function(){
     if(waitingForDriver){
-     gsap.to(waitingforDriverRef.current,{
+     gsap.to(waitingForDriverRef.current,{
        transform:'translateY(0)'
      })
     }else{
-     gsap.to(waitingforDriverRef.current,{
+     gsap.to(waitingForDriverRef.current,{
        transform:'translateY(100%)'
      })
     }
@@ -466,7 +482,7 @@ const Home = () => {
             price={estimatedPrice} 
           />
       </div>
-      <div ref={vehicleFounfRef} className="fixed w-full z-50 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl">
+      <div ref={vehicleFoundRef} className="fixed w-full z-50 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl">
               <LookingForDriver 
                 setVehicleFound={cancelRideRequest}
                 pickup={pickup}
@@ -474,7 +490,7 @@ const Home = () => {
                 price={estimatedPrice} 
               />
       </div>
-      <div ref={waitingforDriverRef} className="fixed w-full z-50 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl">
+      <div ref={waitingForDriverRef} className="fixed w-full z-50 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl">
               <WaitingForDriver 
                 waitingForDriver={waitingForDriver}
                 pickup={pickup}
