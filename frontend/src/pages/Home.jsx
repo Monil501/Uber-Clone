@@ -70,25 +70,56 @@ const Home = () => {
       ];
       
       setAvailableCaptains(mockCaptains);
-      
-      // Simulate captain accepting the ride
-      setTimeout(() => {
-        // Set driver location first to update the map
-        setDriverLocation({
-          lat: mockCaptains[0].lat,
-          lng: mockCaptains[0].lng
-        });
-        
-        // Select a captain and transition to waiting state
-        setSelectedCaptain(mockCaptains[0]);
-        setVehicleFound(false); // Hide looking for driver panel
-        
-        // Small delay before showing the waiting for driver panel for smooth transition
-        setTimeout(() => {
-          setWaitingForDriver(true);
-        }, 300);
-      }, 5000); // Captain accepts after 5 seconds
     }, 2000); // Find captains after 2 seconds
+  };
+
+  // Handle captain selection
+  const handleCaptainSelect = (captain) => {
+    // Set driver location first to update the map
+    setDriverLocation({
+      lat: captain.lat,
+      lng: captain.lng
+    });
+    
+    // Select the captain and transition to waiting state
+    setSelectedCaptain(captain);
+    setVehicleFound(false); // Hide looking for driver panel
+    
+    // Small delay before showing the waiting for driver panel for smooth transition
+    setTimeout(() => {
+      setWaitingForDriver(true);
+    }, 300);
+    
+    // Simulate captain arriving closer to pickup point over time
+    const arrivalInterval = setInterval(() => {
+      setDriverLocation(prev => {
+        if (!prev) return null;
+        
+        // Move driver closer to pickup location
+        const pickupLat = pickupLocation?.lat || 23.0225;
+        const pickupLng = pickupLocation?.lng || 72.5714;
+        
+        const moveFactor = 0.2; // How much to move toward pickup point each update
+        
+        const newLat = prev.lat + (pickupLat - prev.lat) * moveFactor;
+        const newLng = prev.lng + (pickupLng - prev.lng) * moveFactor;
+        
+        // Stop updating when very close to pickup
+        const distance = Math.sqrt(
+          Math.pow(newLat - pickupLat, 2) + 
+          Math.pow(newLng - pickupLng, 2)
+        );
+        
+        if (distance < 0.0005) {
+          clearInterval(arrivalInterval);
+        }
+        
+        return {
+          lat: newLat,
+          lng: newLng
+        };
+      });
+    }, 3000); // Update every 3 seconds
   };
 
   // Cancel ride request
@@ -198,11 +229,14 @@ const Home = () => {
    useGSAP(function(){
     if(vehicleFound){
      gsap.to(vehicleFoundRef.current,{
-       transform:'translateY(0)'
+       transform:'translateY(0)',
+       display: 'block'
      })
     }else{
      gsap.to(vehicleFoundRef.current,{
-       transform:'translateY(100%)'
+       transform:'translateY(100%)',
+       display: 'none',
+       delay: 0.3
      })
     }
    },[vehicleFound])
@@ -210,11 +244,14 @@ const Home = () => {
    useGSAP(function(){
     if(waitingForDriver){
      gsap.to(waitingForDriverRef.current,{
-       transform:'translateY(0)'
+       transform:'translateY(0)',
+       display: 'block'
      })
     }else{
      gsap.to(waitingForDriverRef.current,{
-       transform:'translateY(100%)'
+       transform:'translateY(100%)',
+       display: 'none',
+       delay: 0.3
      })
     }
    },[waitingForDriver])
@@ -492,15 +529,20 @@ const Home = () => {
             price={estimatedPrice} 
           />
       </div>
-      <div ref={vehicleFoundRef} className="fixed w-full z-50 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl pointer-events-auto">
+      <div ref={vehicleFoundRef} className="fixed w-full h-auto z-50 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl pointer-events-auto" style={{ display: vehicleFound ? 'block' : 'none' }}>
+          {vehicleFound && (
               <LookingForDriver 
                 setVehicleFound={cancelRideRequest}
                 pickup={pickup}
                 destination={destination}
-                price={estimatedPrice} 
+                price={estimatedPrice}
+                availableCaptains={availableCaptains}
+                onCaptainSelect={handleCaptainSelect}
               />
+          )}
       </div>
-      <div ref={waitingForDriverRef} className="fixed w-full z-60 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl pointer-events-auto">
+      <div ref={waitingForDriverRef} className="fixed w-full z-60 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl pointer-events-auto" style={{ display: waitingForDriver ? 'block' : 'none' }}>
+          {waitingForDriver && (
               <WaitingForDriver 
                 setWaitingForDriver={setWaitingForDriver}
                 pickup={pickup}
@@ -514,7 +556,21 @@ const Home = () => {
                   plateNumber: "AB 1234 CD"
                 }}
               />
+          )}
       </div>
+      
+      {/* Display a status message only when not actively looking for drivers */}
+      {!vehicleFound && !waitingForDriver && !vehiclePanel && !confirmRidePanel && !panelOpen && pickup && destination && (
+        <div className="absolute bottom-5 left-0 right-0 mx-auto w-64 bg-white rounded-lg shadow-lg p-3 text-center z-10 pointer-events-auto">
+          <button 
+            onClick={() => setVehiclePanel(true)}
+            className="text-black font-medium"
+          >
+            <i className="ri-car-fill mr-2"></i>
+            Search for rides
+          </button>
+        </div>
+      )}
     </div>
   );
 };
