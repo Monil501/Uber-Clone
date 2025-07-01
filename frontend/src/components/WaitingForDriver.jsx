@@ -8,7 +8,7 @@ const WaitingForDriver = (props) => {
       <h5
         className="p-1 text-center w-full absolute top-0 left-0 cursor-pointer"
         onClick={() => {
-          props.waitingForDriver(false);
+          props.setWaitingForDriver(false);
         }}
       >
         <i className="text-3xl text-gray-400 ri-arrow-down-wide-line"></i>

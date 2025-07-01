@@ -107,9 +107,16 @@ const Home = () => {
         setPanelOpen(true);
       } else {
         // Or show vehicle selection if locations are still set
+        setConfirmRidePanel(false); // Ensure confirmation panel is closed
         setVehiclePanel(true);
       }
     }, 300);
+  };
+
+  // Function to book ride from confirm panel
+  const bookRide = () => {
+    setConfirmRidePanel(false); // Hide confirm panel
+    sendRequestToCaptains(); // Start looking for captains
   };
 
   // Calculate estimated price based on distance between pickup and destination
@@ -346,126 +353,128 @@ const Home = () => {
         </div>
       )}
       
-      {/* UI layer */}
-      <div className="flex flex-col justify-end h-screen pointer-events-none absolute top-0 left-0 right-0 w-full z-20">
-        <div className="h-auto min-h-[30%] bg-white shadow-lg p-6 relative pointer-events-auto rounded-t-xl">
-          <h5 
-            ref={panelCloseRef} 
-            onClick={() => {
-              setPanelOpen(false)
-            }} 
-            className="absolute opacity-0 top-6 right-6 text-2xl cursor-pointer"
-          >
-            <i className="ri-arrow-down-wide-line"></i>
-          </h5>
-          <h4 className="text-2xl font-semibold mb-4">Find a trip</h4>
-          <form
-            onSubmit={(e) => {
-              submitHandler(e);
-            }}
-            className="relative"
-          >
-            <div className="line absolute h-16 w-1 top-[45%] left-4 bg-gray-900 rounded-full"></div>
-            <div className="mb-4">
-              <div className="relative">
-                <div className="absolute top-3 left-4 text-gray-500 z-10">
-                  <i className="ri-map-pin-user-fill"></i>
-                </div>
-                <div className="pl-10">
-                  <PlacesAutocomplete 
-                    label=""
-                    onSelectLocation={handlePickupSelect} 
-                    placeholder="Add a pick-up location"
-                    value={pickup}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="mb-4">
-              <div className="relative">
-                <div className="absolute top-3 left-4 text-gray-500 z-10">
-                  <i className="ri-map-pin-2-fill"></i>
-                </div>
-                <div className="pl-10">
-                  <PlacesAutocomplete 
-                    label=""
-                    onSelectLocation={handleDestinationSelect} 
-                    placeholder="Enter your destination"
-                    value={destination}
-                  />
+      {/* UI layer - Only show when no other panels are active */}
+      {!vehiclePanel && !confirmRidePanel && !vehicleFound && !waitingForDriver && (
+        <div className="flex flex-col justify-end h-screen pointer-events-none absolute top-0 left-0 right-0 w-full z-20">
+          <div className="h-auto min-h-[30%] bg-white shadow-lg p-6 relative pointer-events-auto rounded-t-xl">
+            <h5 
+              ref={panelCloseRef} 
+              onClick={() => {
+                setPanelOpen(false)
+              }} 
+              className="absolute opacity-0 top-6 right-6 text-2xl cursor-pointer"
+            >
+              <i className="ri-arrow-down-wide-line"></i>
+            </h5>
+            <h4 className="text-2xl font-semibold mb-4">Find a trip</h4>
+            <form
+              onSubmit={(e) => {
+                submitHandler(e);
+              }}
+              className="relative"
+            >
+              <div className="line absolute h-16 w-1 top-[45%] left-4 bg-gray-900 rounded-full"></div>
+              <div className="mb-4">
+                <div className="relative">
+                  <div className="absolute top-3 left-4 text-gray-500 z-10">
+                    <i className="ri-map-pin-user-fill"></i>
+                  </div>
+                  <div className="pl-10">
+                    <PlacesAutocomplete 
+                      label=""
+                      onSelectLocation={handlePickupSelect} 
+                      placeholder="Add a pick-up location"
+                      value={pickup}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            {pickup && destination && (
-              <button 
-                onClick={handleManualLocationEntry}
-                className="w-full mt-4 bg-black text-white py-3 rounded-lg font-medium text-lg shadow-md hover:bg-gray-800"
-              >
-                Search Rides
-              </button>
+              <div className="mb-4">
+                <div className="relative">
+                  <div className="absolute top-3 left-4 text-gray-500 z-10">
+                    <i className="ri-map-pin-2-fill"></i>
+                  </div>
+                  <div className="pl-10">
+                    <PlacesAutocomplete 
+                      label=""
+                      onSelectLocation={handleDestinationSelect} 
+                      placeholder="Enter your destination"
+                      value={destination}
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {pickup && destination && (
+                <button 
+                  onClick={handleManualLocationEntry}
+                  className="w-full mt-4 bg-black text-white py-3 rounded-lg font-medium text-lg shadow-md hover:bg-gray-800"
+                >
+                  Search Rides
+                </button>
+              )}
+            </form>
+          </div>
+          <div 
+            ref={panelRef} 
+            className="h-0 bg-white overflow-y-auto shadow-lg pointer-events-auto"
+          >
+            {locationStep === 0 ? (
+              <div className="p-4">
+                <h3 className="text-xl font-semibold mb-4">Enter pickup location</h3>
+                <PlacesAutocomplete 
+                  label="Search for pickup location"
+                  onSelectLocation={handlePickupSelect} 
+                  placeholder="Search for pickup location"
+                  value={pickup}
+                />
+                <div className="flex items-center justify-between my-4">
+                  <h4 className="text-lg font-semibold">Or select from map</h4>
+                  <button 
+                    onClick={() => toggleMapSelectionMode('pickup')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg ${mapSelectionMode === 'pickup' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
+                  >
+                    <i className="ri-map-pin-fill"></i>
+                    {mapSelectionMode === 'pickup' ? 'Click on map' : 'From map'}
+                  </button>
+                </div>
+                <div className="mt-5">
+                  <h4 className="text-lg font-semibold mb-2">Saved Places</h4>
+                  <div className="flex items-center gap-4 p-3 border border-gray-200 rounded-lg mb-2">
+                    <i className="ri-home-4-line text-xl"></i>
+                    <span>Home</span>
+                  </div>
+                  <div className="flex items-center gap-4 p-3 border border-gray-200 rounded-lg">
+                    <i className="ri-building-line text-xl"></i>
+                    <span>Work</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4">
+                <h3 className="text-xl font-semibold mb-4">Enter destination</h3>
+                <PlacesAutocomplete 
+                  label="Search for destination"
+                  onSelectLocation={handleDestinationSelect} 
+                  placeholder="Search for destination"
+                  value={destination}
+                />
+                <div className="flex items-center justify-between my-4">
+                  <h4 className="text-lg font-semibold">Or select from map</h4>
+                  <button 
+                    onClick={() => toggleMapSelectionMode('destination')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg ${mapSelectionMode === 'destination' ? 'bg-red-500 text-white' : 'bg-gray-200'}`}
+                  >
+                    <i className="ri-map-pin-fill"></i>
+                    {mapSelectionMode === 'destination' ? 'Click on map' : 'From map'}
+                  </button>
+                </div>
+              </div>
             )}
-          </form>
+          </div>      
         </div>
-        <div 
-          ref={panelRef} 
-          className="h-0 bg-white overflow-y-auto shadow-lg pointer-events-auto"
-        >
-          {locationStep === 0 ? (
-            <div className="p-4">
-              <h3 className="text-xl font-semibold mb-4">Enter pickup location</h3>
-              <PlacesAutocomplete 
-                label="Search for pickup location"
-                onSelectLocation={handlePickupSelect} 
-                placeholder="Search for pickup location"
-                value={pickup}
-              />
-              <div className="flex items-center justify-between my-4">
-                <h4 className="text-lg font-semibold">Or select from map</h4>
-                <button 
-                  onClick={() => toggleMapSelectionMode('pickup')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg ${mapSelectionMode === 'pickup' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
-                >
-                  <i className="ri-map-pin-fill"></i>
-                  {mapSelectionMode === 'pickup' ? 'Click on map' : 'From map'}
-                </button>
-              </div>
-              <div className="mt-5">
-                <h4 className="text-lg font-semibold mb-2">Saved Places</h4>
-                <div className="flex items-center gap-4 p-3 border border-gray-200 rounded-lg mb-2">
-                  <i className="ri-home-4-line text-xl"></i>
-                  <span>Home</span>
-                </div>
-                <div className="flex items-center gap-4 p-3 border border-gray-200 rounded-lg">
-                  <i className="ri-building-line text-xl"></i>
-                  <span>Work</span>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="p-4">
-              <h3 className="text-xl font-semibold mb-4">Enter destination</h3>
-              <PlacesAutocomplete 
-                label="Search for destination"
-                onSelectLocation={handleDestinationSelect} 
-                placeholder="Search for destination"
-                value={destination}
-              />
-              <div className="flex items-center justify-between my-4">
-                <h4 className="text-lg font-semibold">Or select from map</h4>
-                <button 
-                  onClick={() => toggleMapSelectionMode('destination')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg ${mapSelectionMode === 'destination' ? 'bg-red-500 text-white' : 'bg-gray-200'}`}
-                >
-                  <i className="ri-map-pin-fill"></i>
-                  {mapSelectionMode === 'destination' ? 'Click on map' : 'From map'}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>      
-      </div>
-      <div ref={vehiclePanelRef} className="fixed w-full z-50 bg-white bottom-0 translate-y-full px-4 py-10 pt-12 shadow-lg rounded-t-3xl">
+      )}
+      <div ref={vehiclePanelRef} className="fixed w-full z-30 bg-white bottom-0 translate-y-full px-4 py-10 pt-12 shadow-lg rounded-t-3xl pointer-events-auto">
           <VehiclePanel 
             setConfirmRidePanel={setConfirmRidePanel} 
             setVehiclePanel={setVehiclePanel}
@@ -473,16 +482,17 @@ const Home = () => {
             estimatedTime={estimatedTime} 
           /> 
       </div> 
-      <div ref={ConfirmRidePanelRef} className="fixed w-full z-50 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl">
+      <div ref={ConfirmRidePanelRef} className="fixed w-full z-40 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl pointer-events-auto">
           <ConfirmRide 
             setConfirmRidePanel={setConfirmRidePanel}
             sendRequestToCaptains={sendRequestToCaptains}
+            bookRide={bookRide}
             pickup={pickup}
             destination={destination}
             price={estimatedPrice} 
           />
       </div>
-      <div ref={vehicleFoundRef} className="fixed w-full z-50 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl">
+      <div ref={vehicleFoundRef} className="fixed w-full z-50 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl pointer-events-auto">
               <LookingForDriver 
                 setVehicleFound={cancelRideRequest}
                 pickup={pickup}
@@ -490,9 +500,9 @@ const Home = () => {
                 price={estimatedPrice} 
               />
       </div>
-      <div ref={waitingForDriverRef} className="fixed w-full z-50 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl">
+      <div ref={waitingForDriverRef} className="fixed w-full z-60 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl pointer-events-auto">
               <WaitingForDriver 
-                waitingForDriver={waitingForDriver}
+                setWaitingForDriver={setWaitingForDriver}
                 pickup={pickup}
                 destination={destination}
                 price={estimatedPrice}

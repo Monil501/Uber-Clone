@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 const LookingForDriver = (props) => {
-  const { pickup, destination, price } = props;
+  const { pickup, destination, price, setVehicleFound } = props;
   const [searchTime, setSearchTime] = useState(0);
   const [searchStatus, setSearchStatus] = useState('Sending ride request to captains nearby');
   
