@@ -26,22 +26,32 @@
 ## 🖼️ Screenshots
 
 <div align="center">
-  <p>
-    <em>To add screenshots of your application:</em><br>
-    1. Take screenshots of key screens (Home, Vehicle Selection, Captain Selection, etc.)<br>
-    2. Save them in the <code>screenshots/</code> directory<br>
-    3. Update this README to display them<br>
-  </p>
-  
-  <p>Recommended screenshots to include:</p>
-  <ul align="left">
-    <li>Home Screen with location input</li>
-    <li>Vehicle Selection panel</li>
-    <li>Searching for captains screen</li>
-    <li>Captain Selection interface</li>
-    <li>Captain approaching with map view</li>
-    <li>User authentication screens</li>
-  </ul>
+  <table>
+    <tr>
+      <td align="center"><strong>Home Screen</strong></td>
+      <td align="center"><strong>Location Search</strong></td>
+    </tr>
+    <tr>
+      <td><img src="./screenshots/Screenshot 2025-07-01 142342.png" width="400px" alt="Home Screen"></td>
+      <td><img src="./screenshots/Screenshot 2025-07-01 142426.png" width="400px" alt="Location Search"></td>
+    </tr>
+    <tr>
+      <td align="center"><strong>Vehicle Selection</strong></td>
+      <td align="center"><strong>Looking for Captains</strong></td>
+    </tr>
+    <tr>
+      <td><img src="./screenshots/Screenshot 2025-07-01 142507.png" width="400px" alt="Vehicle Selection"></td>
+      <td><img src="./screenshots/Screenshot 2025-07-01 142519.png" width="400px" alt="Looking for Captains"></td>
+    </tr>
+    <tr>
+      <td align="center"><strong>Captain Selection</strong></td>
+      <td align="center"><strong>Captain on the Way</strong></td>
+    </tr>
+    <tr>
+      <td><img src="./screenshots/Screenshot 2025-07-01 142529.png" width="400px" alt="Captain Selection"></td>
+      <td><img src="./screenshots/Screenshot 2025-07-01 143122.png" width="400px" alt="Captain on the Way"></td>
+    </tr>
+  </table>
 </div>
 
 ## 🛠️ Tech Stack
