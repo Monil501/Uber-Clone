@@ -50,6 +50,20 @@ const WaitingForDriver = (props) => {
     }
   };
   
+  // Helper function to get the vehicle display name
+  const getVehicleDisplayName = (vehicleType) => {
+    switch (vehicleType) {
+      case 'uberGo':
+        return 'UberGo';
+      case 'moto':
+        return 'Bike';
+      case 'auto':
+        return 'Auto';
+      default:
+        return 'Vehicle';
+    }
+  };
+  
   return (
     <div className="max-h-[70vh] overflow-y-auto">
       <h5
@@ -83,7 +97,14 @@ const WaitingForDriver = (props) => {
                   <span className="text-sm ml-1">{driverInfo.rating}</span>
                 </div>
               </div>
-              <p className="text-sm text-gray-600">{driverInfo.car} • {driverInfo.plateNumber}</p>
+              <p className="text-sm text-gray-600">
+                {driverInfo.car} • {driverInfo.plateNumber}
+                {driverInfo.vehicleType && (
+                  <span className="ml-2 px-2 py-0.5 bg-gray-100 text-xs rounded-full">
+                    {getVehicleDisplayName(driverInfo.vehicleType)}
+                  </span>
+                )}
+              </p>
               <div className="mt-2 flex items-center gap-3">
                 <button className="bg-gray-100 p-2 rounded-full hover:bg-gray-200">
                   <i className="ri-phone-line text-green-600"></i>

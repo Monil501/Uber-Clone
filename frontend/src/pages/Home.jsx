@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useContext } from "react";
 import {useGSAP} from '@gsap/react'
 import gsap from "gsap";
 import 'remixicon/fonts/remixicon.css'
@@ -9,6 +9,8 @@ import LookingForDriver from "../components/LookingForDriver";
 import WaitingForDriver from "../components/WaitingForDriver";
 import GoogleMapComponent from "../components/GoogleMap";
 import PlacesAutocomplete from "../components/PlacesAutocomplete";
+import { UserDataContext } from "../context/UserContext";
+import axios from "axios";
 
 const Home = () => {
   const [pickup, setPickup] = useState("");
@@ -37,14 +39,75 @@ const Home = () => {
   const [estimatedPrice, setEstimatedPrice] = useState(0);
   const [estimatedTime, setEstimatedTime] = useState(0);
 
-  // Simulate request to captains
-  const sendRequestToCaptains = () => {
+  // Add the user context
+  const { user } = useContext(UserDataContext);
+
+  // Fetch real captains from the backend
+  const sendRequestToCaptains = async () => {
     setRequestSent(true);
     setVehicleFound(true);
     setConfirmRidePanel(false);
     
-    // Simulate API call to find nearby captains
-    setTimeout(() => {
+    try {
+      // Base URL fallback if environment variable is not available
+      const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        console.error('No token found, user must be logged in to find captains');
+        return;
+      }
+
+      // Call the API to find nearby captains
+      const response = await axios.post(`${BASE_URL}/captains/nearby`, {
+        pickup: {
+          lat: pickupLocation.lat,
+          lng: pickupLocation.lng
+        }
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.data && response.data.captains && response.data.captains.length > 0) {
+        setAvailableCaptains(response.data.captains);
+      } else {
+        // If no captains are available, fall back to mock data for demo purposes
+        console.log('No real captains found, using mock data');
+        
+        // Simulate finding captains
+        const mockCaptains = [
+          {
+            id: 1,
+            name: "John Doe",
+            rating: 4.8,
+            car: "Toyota Camry",
+            plateNumber: "AB 1234 CD",
+            distance: "3 min away",
+            lat: pickupLocation ? pickupLocation.lat + (Math.random() - 0.5) * 0.01 : 23.0225,
+            lng: pickupLocation ? pickupLocation.lng + (Math.random() - 0.5) * 0.01 : 72.5714
+          },
+          {
+            id: 2,
+            name: "Jane Smith",
+            rating: 4.9,
+            car: "Honda Civic",
+            plateNumber: "XY 5678 ZW",
+            distance: "5 min away",
+            lat: pickupLocation ? pickupLocation.lat + (Math.random() - 0.5) * 0.015 : 23.0235,
+            lng: pickupLocation ? pickupLocation.lng + (Math.random() - 0.5) * 0.015 : 72.5724
+          }
+        ];
+        
+        setAvailableCaptains(mockCaptains);
+      }
+    } catch (error) {
+      console.error('Error finding captains:', error);
+      
+      // For demo purposes, fall back to mock data if the API call fails
+      console.log('Error finding captains, using mock data');
+      
       // Simulate finding captains
       const mockCaptains = [
         {
@@ -70,7 +133,7 @@ const Home = () => {
       ];
       
       setAvailableCaptains(mockCaptains);
-    }, 2000); // Find captains after 2 seconds
+    }
   };
 
   // Handle captain selection
@@ -144,10 +207,71 @@ const Home = () => {
     }, 300);
   };
 
-  // Function to book ride from confirm panel
-  const bookRide = () => {
+  // Update the bookRide function to call the API
+  const bookRide = async (selectedVehicleType) => {
     setConfirmRidePanel(false); // Hide confirm panel
-    sendRequestToCaptains(); // Start looking for captains
+
+    try {
+      // Base URL fallback if environment variable is not available
+      const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        console.error('No token found, user must be logged in to book a ride');
+        return;
+      }
+
+      // Calculate distance between pickup and destination for API payload
+      const R = 6371; // Earth's radius in km
+      const dLat = (destinationLocation.lat - pickupLocation.lat) * Math.PI / 180;
+      const dLon = (destinationLocation.lng - pickupLocation.lng) * Math.PI / 180;
+      const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(pickupLocation.lat * Math.PI / 180) * Math.cos(destinationLocation.lat * Math.PI / 180) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      const distance = R * c; // Distance in km
+
+      // Prepare ride data for API
+      const rideData = {
+        pickup: {
+          address: pickup,
+          lat: pickupLocation.lat,
+          lng: pickupLocation.lng
+        },
+        destination: {
+          address: destination,
+          lat: destinationLocation.lat,
+          lng: destinationLocation.lng
+        },
+        price: estimatedPrice,
+        vehicleType: selectedVehicleType || 'uberGo', // Default to uberGo if not specified
+        distance: distance,
+        estimatedTime: estimatedTime
+      };
+
+      // Call the API to book a ride
+      const response = await axios.post(`${BASE_URL}/rides/book`, rideData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.data && response.data.ride) {
+        console.log('Ride booked successfully:', response.data.ride);
+        // Proceed to find captains
+        sendRequestToCaptains();
+      } else {
+        console.error('Unexpected response format:', response.data);
+        // Fall back to demo flow for now
+        sendRequestToCaptains();
+      }
+    } catch (error) {
+      console.error('Error booking ride:', error);
+      // For demo purposes, continue with finding captains even if booking fails
+      console.log('Falling back to demo flow...');
+      sendRequestToCaptains();
+    }
   };
 
   // Calculate estimated price based on distance between pickup and destination
@@ -522,7 +646,6 @@ const Home = () => {
       <div ref={ConfirmRidePanelRef} className="fixed w-full z-40 bg-white bottom-0 translate-y-full px-4 py-6 pt-12 shadow-lg rounded-t-3xl pointer-events-auto">
           <ConfirmRide 
             setConfirmRidePanel={setConfirmRidePanel}
-            sendRequestToCaptains={sendRequestToCaptains}
             bookRide={bookRide}
             pickup={pickup}
             destination={destination}

@@ -79,3 +79,30 @@ module.exports.logoutCaptain = async (req, res, next) => {
 
     res.status(200).json({ message: 'Logout successfully' });
 }
+
+// Find nearby captains based on pickup location
+module.exports.findNearbyCaptains = async (req, res, next) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { pickup } = req.body;
+        
+        if (!pickup || !pickup.lat || !pickup.lng) {
+            return res.status(400).json({ message: 'Pickup location is required' });
+        }
+
+        const captains = await captainService.findNearbyCaptains(pickup);
+        
+        if (captains.length === 0) {
+            return res.status(404).json({ message: 'No captains found nearby' });
+        }
+
+        res.status(200).json({ captains });
+    } catch (error) {
+        console.error('Error finding nearby captains:', error);
+        res.status(500).json({ message: error.message });
+    }
+}

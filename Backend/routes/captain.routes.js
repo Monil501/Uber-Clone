@@ -2,7 +2,12 @@ const captainController = require('../controllers/captain.controller');
 const express = require('express');
 const router = express.Router();
 const { body } = require("express-validator")
-const authMiddleware = require('../middlewares/auth.middleware');
+const { authUser, authCaptain } = require('../middlewares/auth.middleware');
+
+// Simple test route to check if the API is working
+router.get('/test', (req, res) => {
+    res.status(200).json({ message: 'Captain routes are working!' });
+});
 
 router.post('/register', [
     body('email').isEmail().withMessage('Invalid Email'),
@@ -24,8 +29,18 @@ router.post('/login', [
 )
 
 
-router.get('/profile', authMiddleware.authCaptain, captainController.getCaptainProfile)
+router.get('/profile', authCaptain, captainController.getCaptainProfile)
 
-router.get('/logout', authMiddleware.authCaptain, captainController.logoutCaptain)
+router.get('/logout', authCaptain, captainController.logoutCaptain)
+
+// Find nearby captains based on pickup location
+router.post('/nearby', 
+    authUser, 
+    [
+        body('pickup.lat').isNumeric().withMessage('Pickup latitude must be a number'),
+        body('pickup.lng').isNumeric().withMessage('Pickup longitude must be a number')
+    ],
+    captainController.findNearbyCaptains
+)
 
 module.exports = router;

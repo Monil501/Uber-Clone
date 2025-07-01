@@ -29,6 +29,7 @@ function GoogleMapComponent({ pickup, destination, driverLocation, onMapClick, s
     const checkGoogleMapsLoaded = () => {
       if (window.google && window.google.maps) {
         setIsApiLoaded(true);
+        console.log("Google Maps API loaded successfully");
       } else {
         // If not loaded yet, check again in 500ms
         setTimeout(checkGoogleMapsLoaded, 500);
@@ -37,7 +38,30 @@ function GoogleMapComponent({ pickup, destination, driverLocation, onMapClick, s
 
     // Handle API loading error
     const handleScriptError = () => {
+      console.error("Failed to load Google Maps API");
       setLoadError(new Error("Failed to load Google Maps API"));
+    };
+
+    // Check if API key is configured
+    const checkApiKey = () => {
+      const scripts = document.querySelectorAll('script[src*="maps.googleapis.com"]');
+      if (scripts.length === 0) {
+        console.error("No Google Maps API script found");
+        setLoadError(new Error("No Google Maps API script found. Please check your API key configuration."));
+        return false;
+      }
+      
+      // Check if any script has the API key
+      for (const script of scripts) {
+        const src = script.getAttribute('src');
+        if (src && src.includes('key=') && !src.includes('key=YOUR_API_KEY')) {
+          return true;
+        }
+      }
+      
+      console.error("Google Maps API key not properly configured");
+      setLoadError(new Error("Google Maps API key not properly configured"));
+      return false;
     };
 
     // Add error handler for the script
@@ -46,9 +70,20 @@ function GoogleMapComponent({ pickup, destination, driverLocation, onMapClick, s
       scriptElements.forEach(script => {
         script.addEventListener('error', handleScriptError);
       });
+    } else {
+      // No script found, check if it's included in the index.html
+      checkApiKey();
     }
 
+    // Start checking if API is loaded
     checkGoogleMapsLoaded();
+
+    // Set a timeout to stop checking after 10 seconds
+    const timeout = setTimeout(() => {
+      if (!isApiLoaded) {
+        setLoadError(new Error("Google Maps API loading timed out. Please check your API key and network connection."));
+      }
+    }, 10000);
 
     return () => {
       if (scriptElements.length > 0) {
@@ -56,6 +91,7 @@ function GoogleMapComponent({ pickup, destination, driverLocation, onMapClick, s
           script.removeEventListener('error', handleScriptError);
         });
       }
+      clearTimeout(timeout);
     };
   }, []);
 
@@ -111,35 +147,62 @@ function GoogleMapComponent({ pickup, destination, driverLocation, onMapClick, s
   const handleMapClick = useCallback((event) => {
     if (!onMapClick || !selectionMode) return;
     
-    const lat = event.latLng.lat();
-    const lng = event.latLng.lng();
-    
-    setClickedLocation({ lat, lng });
-    
-    // Get address from coordinates using geocoder
-    if (geocoder.current) {
-      geocoder.current.geocode({ location: { lat, lng } }, (results, status) => {
-        if (status === "OK" && results[0]) {
-          const address = results[0].formatted_address;
-          
-          // Pass the location back to the parent component
-          onMapClick({
-            lat,
-            lng,
-            address,
-            formattedAddress: address
-          });
-        } else {
-          console.error("Geocoder failed due to: " + status);
-          // Still pass coordinates even if geocoding failed
+    try {
+      const lat = event.latLng.lat();
+      const lng = event.latLng.lng();
+      
+      setClickedLocation({ lat, lng });
+      
+      // Get address from coordinates using geocoder
+      if (geocoder.current) {
+        geocoder.current.geocode({ location: { lat, lng } }, (results, status) => {
+          if (status === "OK" && results[0]) {
+            const address = results[0].formatted_address;
+            
+            // Pass the location back to the parent component
+            onMapClick({
+              lat,
+              lng,
+              address,
+              formattedAddress: address
+            });
+          } else {
+            console.error("Geocoder failed due to: " + status);
+            // Still pass coordinates even if geocoding failed
+            onMapClick({
+              lat, 
+              lng,
+              address: `Location at ${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+              formattedAddress: `Location at ${lat.toFixed(6)}, ${lng.toFixed(6)}`
+            });
+          }
+        });
+      } else {
+        console.warn("Geocoder not available, using coordinates only");
+        onMapClick({
+          lat, 
+          lng,
+          address: `Location at ${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+          formattedAddress: `Location at ${lat.toFixed(6)}, ${lng.toFixed(6)}`
+        });
+      }
+    } catch (error) {
+      console.error("Error handling map click:", error);
+      if (onMapClick) {
+        // Try to recover with event coordinates if available
+        try {
+          const lat = event.latLng.lat();
+          const lng = event.latLng.lng();
           onMapClick({
             lat, 
             lng,
-            address: `Location at ${lat.toFixed(6)}, ${lng.toFixed(6)}`,
-            formattedAddress: `Location at ${lat.toFixed(6)}, ${lng.toFixed(6)}`
+            address: `Selected location`,
+            formattedAddress: `Selected location`
           });
+        } catch (e) {
+          console.error("Could not extract coordinates from click event:", e);
         }
-      });
+      }
     }
   }, [onMapClick, selectionMode]);
 

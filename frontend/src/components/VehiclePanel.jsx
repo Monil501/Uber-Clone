@@ -1,13 +1,22 @@
 import React from 'react'
 
 const VehiclePanel = (props) => {
-  const { estimatedPrice, estimatedTime } = props;
+  const { estimatedPrice, estimatedTime, setConfirmRidePanel, setVehiclePanel } = props;
   
   // Calculate prices for different vehicle types
   const prices = {
     uberGo: estimatedPrice || 193,
     moto: Math.round((estimatedPrice || 193) * 0.33) || 65,
     auto: Math.round((estimatedPrice || 193) * 0.5) || 100
+  };
+  
+  // Function to handle vehicle selection
+  const handleVehicleSelect = (vehicleType) => {
+    // Store the selected vehicle type in sessionStorage
+    sessionStorage.setItem('selectedVehicleType', vehicleType);
+    // Switch to confirm panel
+    setConfirmRidePanel(true);
+    setVehiclePanel(false);
   };
   
   return (
@@ -24,10 +33,7 @@ const VehiclePanel = (props) => {
       <h3 className="text-2xl font-semibold mb-5">Choose a vehicle</h3>
       
       <div 
-        onClick={() => {
-          props.setConfirmRidePanel(true)
-          props.setVehiclePanel(false)
-        }} 
+        onClick={() => handleVehicleSelect('uberGo')}
         className="flex border-2 border-white hover:border-black active:border-black mb-4 rounded-xl w-full p-4 items-center justify-between cursor-pointer"
       >
         <div className="flex-shrink-0 w-16">
@@ -54,10 +60,7 @@ const VehiclePanel = (props) => {
       </div>
       
       <div 
-        onClick={() => {
-          props.setConfirmRidePanel(true)
-          props.setVehiclePanel(false)
-        }} 
+        onClick={() => handleVehicleSelect('moto')} 
         className="flex border-2 border-white hover:border-black active:border-black mb-4 rounded-xl w-full p-4 items-center justify-between cursor-pointer"
       >
         <div className="flex-shrink-0 w-16">
@@ -84,10 +87,7 @@ const VehiclePanel = (props) => {
       </div>
       
       <div 
-        onClick={() => {
-          props.setConfirmRidePanel(true)
-          props.setVehiclePanel(false)
-        }} 
+        onClick={() => handleVehicleSelect('auto')}
         className="flex border-2 border-white hover:border-black active:border-black mb-4 rounded-xl w-full p-4 items-center justify-between cursor-pointer"
       >
         <div className="flex-shrink-0 w-16">

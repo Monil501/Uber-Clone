@@ -37,6 +37,20 @@ const LookingForDriver = (props) => {
     }
   }, [searchTime, availableCaptains]);
   
+  // Helper function to get the vehicle display name
+  const getVehicleDisplayName = (vehicleType) => {
+    switch (vehicleType) {
+      case 'uberGo':
+        return 'UberGo';
+      case 'moto':
+        return 'Bike';
+      case 'auto':
+        return 'Auto';
+      default:
+        return 'Vehicle';
+    }
+  };
+  
   return (
     <div className="max-h-[70vh] overflow-y-auto">
       <h5
@@ -72,7 +86,14 @@ const LookingForDriver = (props) => {
                         <span className="text-sm ml-1">{captain.rating}</span>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600">{captain.car} • {captain.plateNumber}</p>
+                    <p className="text-sm text-gray-600">
+                      {captain.car} • {captain.plateNumber}
+                      {captain.vehicleType && (
+                        <span className="ml-2 px-2 py-0.5 bg-gray-100 text-xs rounded-full">
+                          {getVehicleDisplayName(captain.vehicleType)}
+                        </span>
+                      )}
+                    </p>
                     <p className="text-sm text-green-600 mt-1">{captain.distance}</p>
                   </div>
                 </div>

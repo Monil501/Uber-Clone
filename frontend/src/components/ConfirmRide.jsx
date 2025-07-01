@@ -1,7 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const ConfirmRide = (props) => {
-  const { pickup, destination, price, sendRequestToCaptains } = props;
+  const { pickup, destination, price, bookRide } = props;
+  const [vehicleType, setVehicleType] = useState('uberGo');
+  const [vehicleImage, setVehicleImage] = useState('https://www.uber-assets.com/image/upload/f_auto,q_auto:eco,c_fill,h_538,w_956/v1688398971/assets/29/fbb8b0-75b1-4e2a-8533-3a364e7042fa/original/UberSelect-White.png');
+  
+  // Get vehicle type from sessionStorage when component mounts
+  useEffect(() => {
+    const storedVehicleType = sessionStorage.getItem('selectedVehicleType') || 'uberGo';
+    setVehicleType(storedVehicleType);
+    
+    // Set the appropriate image based on vehicle type
+    if (storedVehicleType === 'moto') {
+      setVehicleImage('https://www.uber-assets.com/image/upload/f_auto,q_auto:eco,c_fill,h_538,w_956/v1698944322/assets/92/00189a-71c0-4f6d-a9de-1b6a85239079/original/UberMoto-India-Orange.png');
+    } else if (storedVehicleType === 'auto') {
+      setVehicleImage('https://www.uber-assets.com/image/upload/f_auto,q_auto:eco,c_fill,h_368,w_552/v1648431773/assets/1d/db8c56-0204-4ce4-81ce-56a11a07fe98/original/Uber_Auto_558x372_pixels_Desktop.png');
+    }
+  }, []);
+  
+  // Get the display name for the vehicle type
+  const getVehicleDisplayName = () => {
+    if (vehicleType === 'moto') return 'Moto';
+    if (vehicleType === 'auto') return 'Auto';
+    return 'UberGo';
+  };
   
   return (
     <div>
@@ -18,8 +40,8 @@ const ConfirmRide = (props) => {
         <div className="flex justify-center w-full">
           <img
             className="h-20 object-contain"
-            src="https://www.uber-assets.com/image/upload/f_auto,q_auto:eco,c_fill,h_538,w_956/v1688398971/assets/29/fbb8b0-75b1-4e2a-8533-3a364e7042fa/original/UberSelect-White.png"
-            alt="UberGo"
+            src={vehicleImage}
+            alt={getVehicleDisplayName()}
           />
         </div>
         <div className="w-full mt-5">
@@ -63,11 +85,11 @@ const ConfirmRide = (props) => {
         </div>
         <button 
           onClick={() => {
-            sendRequestToCaptains();
+            bookRide(vehicleType);
           }} 
           className="w-full mt-6 bg-green-600 text-white font-semibold py-3 rounded-lg hover:bg-green-700 transition-colors"
         >
-          Confirm UberGo
+          Confirm {getVehicleDisplayName()}
         </button>
       </div>
     </div>
