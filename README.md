@@ -191,5 +191,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <div align="center">
-  <p>Made with ❤️ by Jay Patel</p>
+  <p>Made with ❤️ by Monil Modi</p>
 </div> 
