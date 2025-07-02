@@ -16,7 +16,6 @@ const PlacesAutocomplete = ({
   const [inputValue, setInputValue] = useState(defaultValue || value || '');
   const [hasManuallySelected, setHasManuallySelected] = useState(false);
   const [isApiLoaded, setIsApiLoaded] = useState(false);
-  const [loadError, setLoadError] = useState(null);
 
   // Check if Google Maps API is loaded
   useEffect(() => {
@@ -29,28 +28,7 @@ const PlacesAutocomplete = ({
       }
     };
 
-    // Handle API loading error
-    const handleScriptError = () => {
-      setLoadError(new Error("Failed to load Google Maps API"));
-    };
-
-    // Add error handler for the script
-    const scriptElements = document.querySelectorAll('script[src*="maps.googleapis.com"]');
-    if (scriptElements.length > 0) {
-      scriptElements.forEach(script => {
-        script.addEventListener('error', handleScriptError);
-      });
-    }
-
     checkGoogleMapsLoaded();
-
-    return () => {
-      if (scriptElements.length > 0) {
-        scriptElements.forEach(script => {
-          script.removeEventListener('error', handleScriptError);
-        });
-      }
-    };
   }, []);
 
   // Only initialize usePlacesAutocomplete when API is loaded
@@ -107,7 +85,7 @@ const PlacesAutocomplete = ({
         placeId: suggestion.place_id,
       });
     } catch (error) {
-      console.error("😱 Error: ", error);
+      console.error("Error: ", error);
     }
   };
 
@@ -131,31 +109,19 @@ const PlacesAutocomplete = ({
     }
   };
 
-  if (loadError) {
-    return (
-      <div className="mb-2">
-        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <div className="bg-red-50 border border-red-200 p-4 rounded-md text-red-600 text-sm">
-          Error loading Google Maps Places API: {loadError.message}
-          <p className="mt-2 font-semibold">
-            Please ensure you have:
-          </p>
-          <ol className="list-decimal pl-5 mt-1">
-            <li>Created a valid Google Maps API key</li>
-            <li>Enabled the Places API for your key</li>
-            <li>Added your API key to the .env file as VITE_GOOGLE_MAPS_API_KEY</li>
-            <li>Enabled billing on your Google Cloud account</li>
-          </ol>
-        </div>
-      </div>
-    );
-  }
-
+  // If API is not loaded, show a simple input without autocomplete
   if (!isApiLoaded) {
     return (
-      <div className="mb-2">
-        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <div className="animate-pulse h-10 bg-gray-200 rounded-md"></div>
+      <div className="mb-0 relative w-full">
+        {label && (
+          <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+        )}
+        <input
+          value={inputValue}
+          onChange={handleInputChange}
+          placeholder={placeholder}
+          className="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full text-base border-gray-300 rounded-md p-3"
+        />
       </div>
     );
   }

@@ -5,6 +5,22 @@ const WaitingForDriver = (props) => {
   const [status, setStatus] = useState('accepted');
   const [timeRemaining, setTimeRemaining] = useState(estimatedTime || 5);
   
+  // Check if driver info is available
+  if (!driverInfo) {
+    return (
+      <div className="p-6 text-center">
+        <h3 className="text-xl font-semibold mb-4">Error: Captain information not available</h3>
+        <p className="text-gray-600 mb-6">Please try requesting a ride again.</p>
+        <button 
+          className="w-full bg-red-600 text-white font-semibold py-3 rounded-lg hover:bg-red-700 transition-colors"
+          onClick={() => setWaitingForDriver(false)}
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
+  
   // Simulate driver status updates
   useEffect(() => {
     const timer = setInterval(() => {
@@ -147,7 +163,7 @@ const WaitingForDriver = (props) => {
           <div className="flex-1 overflow-hidden">
             <h3 className="text-lg font-medium">Pickup</h3>
             <p className="text-sm text-gray-600 truncate">
-              {pickup || "562/11-A, kankariya talab, Ahemdabad"}
+              {pickup}
             </p>
           </div>
         </div>
@@ -158,7 +174,7 @@ const WaitingForDriver = (props) => {
           <div className="flex-1 overflow-hidden">
             <h3 className="text-lg font-medium">Destination</h3>
             <p className="text-sm text-gray-600 truncate">
-              {destination || "562/11-A, kankariya talab, Ahemdabad"}
+              {destination}
             </p>
           </div>
         </div>
@@ -168,7 +184,7 @@ const WaitingForDriver = (props) => {
               <i className="ri-cash-fill"></i>
             </div>
             <div>
-              <h3 className="text-lg font-medium">₹{price || 193}</h3>
+              <h3 className="text-lg font-medium">₹{price}</h3>
               <p className="text-sm text-gray-600">Cash</p>
             </div>
           </div>

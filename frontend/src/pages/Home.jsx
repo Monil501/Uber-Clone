@@ -55,85 +55,62 @@ const Home = () => {
 
       if (!token) {
         console.error('No token found, user must be logged in to find captains');
+        setVehicleFound(false);
         return;
       }
 
       // Call the API to find nearby captains
-      const response = await axios.post(`${BASE_URL}/captains/nearby`, {
-        pickup: {
-          lat: pickupLocation.lat,
-          lng: pickupLocation.lng
-        }
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (response.data && response.data.captains && response.data.captains.length > 0) {
-        setAvailableCaptains(response.data.captains);
-      } else {
-        // If no captains are available, fall back to mock data for demo purposes
-        console.log('No real captains found, using mock data');
-        
-        // Simulate finding captains
-        const mockCaptains = [
-          {
-            id: 1,
-            name: "John Doe",
-            rating: 4.8,
-            car: "Toyota Camry",
-            plateNumber: "AB 1234 CD",
-            distance: "3 min away",
-            lat: pickupLocation ? pickupLocation.lat + (Math.random() - 0.5) * 0.01 : 23.0225,
-            lng: pickupLocation ? pickupLocation.lng + (Math.random() - 0.5) * 0.01 : 72.5714
-          },
-          {
-            id: 2,
-            name: "Jane Smith",
-            rating: 4.9,
-            car: "Honda Civic",
-            plateNumber: "XY 5678 ZW",
-            distance: "5 min away",
-            lat: pickupLocation ? pickupLocation.lat + (Math.random() - 0.5) * 0.015 : 23.0235,
-            lng: pickupLocation ? pickupLocation.lng + (Math.random() - 0.5) * 0.015 : 72.5724
+      try {
+        const response = await axios.post(`${BASE_URL}/captains/nearby`, {
+          pickup: {
+            lat: pickupLocation.lat,
+            lng: pickupLocation.lng
           }
-        ];
-        
-        setAvailableCaptains(mockCaptains);
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (response.data && response.data.captains && response.data.captains.length > 0) {
+          setAvailableCaptains(response.data.captains);
+        } else {
+          // Use mock data if API returns empty captains array
+          console.log('No captains available in API response, using mock data');
+          createMockCaptains();
+        }
+      } catch (apiError) {
+        // If the API call fails (e.g., 404 error), use mock data
+        console.error('API error:', apiError);
+        console.log('Using mock data due to API error');
+        createMockCaptains();
       }
     } catch (error) {
       console.error('Error finding captains:', error);
-      
-      // For demo purposes, fall back to mock data if the API call fails
-      console.log('Error finding captains, using mock data');
-      
-      // Simulate finding captains
-      const mockCaptains = [
-        {
-          id: 1,
-          name: "John Doe",
-          rating: 4.8,
-          car: "Toyota Camry",
-          plateNumber: "AB 1234 CD",
-          distance: "3 min away",
-          lat: pickupLocation ? pickupLocation.lat + (Math.random() - 0.5) * 0.01 : 23.0225,
-          lng: pickupLocation ? pickupLocation.lng + (Math.random() - 0.5) * 0.01 : 72.5714
-        },
-        {
-          id: 2,
-          name: "Jane Smith",
-          rating: 4.9,
-          car: "Honda Civic",
-          plateNumber: "XY 5678 ZW",
-          distance: "5 min away",
-          lat: pickupLocation ? pickupLocation.lat + (Math.random() - 0.5) * 0.015 : 23.0235,
-          lng: pickupLocation ? pickupLocation.lng + (Math.random() - 0.5) * 0.015 : 72.5724
-        }
-      ];
-      
-      setAvailableCaptains(mockCaptains);
+      setVehicleFound(false);
+      // Show error message
+      alert('Unable to find captains. Please try again later.');
     }
+  };
+
+  // Create mock captains for demo purposes
+  const createMockCaptains = () => {
+    // Mock captains with location near pickup point
+    const mockCaptains = [
+      {
+        id: 'mock-1',
+        name: "Demo Driver",
+        rating: 4.8,
+        car: "Toyota Camry",
+        vehicleType: "uberGo",
+        plateNumber: "DL 01 AB 1234",
+        distance: "3 min away",
+        lat: pickupLocation ? pickupLocation.lat + 0.005 : 23.0225,
+        lng: pickupLocation ? pickupLocation.lng + 0.005 : 72.5714
+      }
+    ];
+    
+    setAvailableCaptains(mockCaptains);
   };
 
   // Handle captain selection
@@ -672,12 +649,7 @@ const Home = () => {
                 destination={destination}
                 price={estimatedPrice}
                 estimatedTime={estimatedTime}
-                driverInfo={selectedCaptain || {
-                  name: "John Doe",
-                  rating: 4.8,
-                  car: "Toyota Camry",
-                  plateNumber: "AB 1234 CD"
-                }}
+                driverInfo={selectedCaptain}
               />
           )}
       </div>

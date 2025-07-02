@@ -96,10 +96,7 @@ module.exports.findNearbyCaptains = async (req, res, next) => {
 
         const captains = await captainService.findNearbyCaptains(pickup);
         
-        if (captains.length === 0) {
-            return res.status(404).json({ message: 'No captains found nearby' });
-        }
-
+        // Always return a 200 response with the captains array, even if empty
         res.status(200).json({ captains });
     } catch (error) {
         console.error('Error finding nearby captains:', error);

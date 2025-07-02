@@ -51,6 +51,22 @@ const LookingForDriver = (props) => {
     }
   };
   
+  // Validate required props
+  if (!pickup || !destination) {
+    return (
+      <div className="p-6 text-center">
+        <h3 className="text-xl font-semibold mb-4">Error: Incomplete ride information</h3>
+        <p className="text-gray-600 mb-6">Please provide pickup and destination information.</p>
+        <button 
+          className="w-full bg-red-600 text-white font-semibold py-3 rounded-lg hover:bg-red-700 transition-colors"
+          onClick={() => setVehicleFound(false)}
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
+  
   return (
     <div className="max-h-[70vh] overflow-y-auto">
       <h5
@@ -128,7 +144,7 @@ const LookingForDriver = (props) => {
           <div className="flex-1 overflow-hidden">
             <h3 className="text-lg font-medium">Pickup</h3>
             <p className="text-sm text-gray-600 truncate">
-              {pickup || "562/11-A, kankariya talab, Ahemdabad"}
+              {pickup}
             </p>
           </div>
         </div>
@@ -139,7 +155,7 @@ const LookingForDriver = (props) => {
           <div className="flex-1 overflow-hidden">
             <h3 className="text-lg font-medium">Destination</h3>
             <p className="text-sm text-gray-600 truncate">
-              {destination || "562/11-A, kankariya talab, Ahemdabad"}
+              {destination}
             </p>
           </div>
         </div>
@@ -149,7 +165,7 @@ const LookingForDriver = (props) => {
               <i className="ri-cash-fill"></i>
             </div>
             <div>
-              <h3 className="text-lg font-medium">₹{price || 193}</h3>
+              <h3 className="text-lg font-medium">₹{price}</h3>
               <p className="text-sm text-gray-600">Cash</p>
             </div>
           </div>

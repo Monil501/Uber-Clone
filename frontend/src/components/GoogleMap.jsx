@@ -14,7 +14,6 @@ const center = {
 
 function GoogleMapComponent({ pickup, destination, driverLocation, onMapClick, selectionMode }) {
   const [isApiLoaded, setIsApiLoaded] = useState(false);
-  const [loadError, setLoadError] = useState(null);
   const [map, setMap] = useState(null);
   const [directions, setDirections] = useState(null);
   const [selectedMarker, setSelectedMarker] = useState(null);
@@ -36,61 +35,17 @@ function GoogleMapComponent({ pickup, destination, driverLocation, onMapClick, s
       }
     };
 
-    // Handle API loading error
-    const handleScriptError = () => {
-      console.error("Failed to load Google Maps API");
-      setLoadError(new Error("Failed to load Google Maps API"));
-    };
-
-    // Check if API key is configured
-    const checkApiKey = () => {
-      const scripts = document.querySelectorAll('script[src*="maps.googleapis.com"]');
-      if (scripts.length === 0) {
-        console.error("No Google Maps API script found");
-        setLoadError(new Error("No Google Maps API script found. Please check your API key configuration."));
-        return false;
-      }
-      
-      // Check if any script has the API key
-      for (const script of scripts) {
-        const src = script.getAttribute('src');
-        if (src && src.includes('key=') && !src.includes('key=YOUR_API_KEY')) {
-          return true;
-        }
-      }
-      
-      console.error("Google Maps API key not properly configured");
-      setLoadError(new Error("Google Maps API key not properly configured"));
-      return false;
-    };
-
-    // Add error handler for the script
-    const scriptElements = document.querySelectorAll('script[src*="maps.googleapis.com"]');
-    if (scriptElements.length > 0) {
-      scriptElements.forEach(script => {
-        script.addEventListener('error', handleScriptError);
-      });
-    } else {
-      // No script found, check if it's included in the index.html
-      checkApiKey();
-    }
-
     // Start checking if API is loaded
     checkGoogleMapsLoaded();
 
     // Set a timeout to stop checking after 10 seconds
     const timeout = setTimeout(() => {
       if (!isApiLoaded) {
-        setLoadError(new Error("Google Maps API loading timed out. Please check your API key and network connection."));
+        console.warn("Google Maps API loading timed out");
       }
     }, 10000);
 
     return () => {
-      if (scriptElements.length > 0) {
-        scriptElements.forEach(script => {
-          script.removeEventListener('error', handleScriptError);
-        });
-      }
       clearTimeout(timeout);
     };
   }, []);
@@ -267,33 +222,6 @@ function GoogleMapComponent({ pickup, destination, driverLocation, onMapClick, s
       setDirections(null);
     }
   }, [isApiLoaded, pickup, destination]);
-
-  // If there's an error loading the Google Maps script
-  if (loadError) {
-    return (
-      <div className="h-full w-full bg-red-100 flex items-center justify-center">
-        <div className="bg-white p-6 rounded-lg shadow-md text-red-500 max-w-md">
-          <h3 className="font-bold text-lg mb-2">Google Maps Error</h3>
-          <p className="mb-4">Error loading Google Maps: {loadError.message}</p>
-          
-          <div className="bg-yellow-50 p-4 rounded-md text-sm">
-            <h4 className="font-bold mb-2">How to fix:</h4>
-            <ol className="list-decimal pl-4 space-y-1">
-              <li>Create a proper Google Maps API key at <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Google Cloud Console</a></li>
-              <li>Enable these APIs: Maps JavaScript API, Places API, Directions API, Geocoding API</li>
-              <li>Enable billing for your project (required even for free tier)</li>
-              <li>Create a .env file in the frontend directory with:<br/>
-                <code className="bg-gray-100 px-2 py-1 rounded text-xs block mt-1">
-                  VITE_GOOGLE_MAPS_API_KEY=your_actual_api_key_here
-                </code>
-              </li>
-              <li>Restart the development server</li>
-            </ol>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // If still loading
   if (!isApiLoaded) {
